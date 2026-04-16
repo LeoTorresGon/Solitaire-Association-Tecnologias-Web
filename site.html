@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <title> Paciência! </title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="estilo.css" />
+    </head>
+
+    <body>
+        <div id="sumir">
+            <h1> Esse é um jogo de paciência! <img src="https://upload.wikimedia.org/wikipedia/commons/3/37/Clock.gif" width="100" height="100"/></h1> 
+            <form>
+                <label for="fname" id="fname"> Nome: </label>
+                <input type="text"> <br>
+                <input type="submit" value="Começar" onclick="hideDiv()">
+            </form>
+            <button onclick="hideDiv()"> A </button>
+            <p id="a"> b </p>
+        </div>
+        <script>
+                function hideDiv(){
+                    document.getElementById("a").value = document.getElementById("fname").value;
+                    // document.getElementById('sumir').hidden = true
+                }
+        </script>
+    </body>
+</html>
