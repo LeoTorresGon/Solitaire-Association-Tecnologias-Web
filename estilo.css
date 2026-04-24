@@ -1,11 +1,35 @@
-h1 {
-    color: blueviolet
-}
-h2 {
-    color: blueviolet
+.horizontal-direita {
+    display: flex;
+    justify-content: flex-end;
 }
 
-div {
-  width: 500px;
-  margin: auto;
+
+.horizontal-esquerda {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 50px;
+}
+
+.fundo-total {
+    background-color: rgb(92, 92, 92);
+    height: 100%;
+    width: 100%;
+}
+
+.fundo {
+    background-color: rgb(3, 116, 37);
+    height: 900px;
+    width: 750px;
+    margin: auto;
+    padding: 10px;
+}
+
+.quadrado {
+    width: 150px;
+    height: 210px;
+    border: 1px solid #aaaaaa;
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

@@ -4,24 +4,46 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="estilo.css" />
+        <script>
+            function dragstartHandler(ev) {
+                ev.dataTransfer.setData("text", ev.target.id);
+            }
+
+            function dragoverHandler(ev) {
+                ev.preventDefault();
+            }
+
+            function dropHandler(ev) {
+                ev.preventDefault();
+                const data = ev.dataTransfer.getData("text");
+                if (ev.target.className === "quadrado") {
+                    ev.target.appendChild(document.getElementById(data));
+                }
+            }
+        </script>
     </head>
 
+    
+    
     <body>
-        <div id="sumir">
-            <h1> Esse é um jogo de paciência! <img src="https://upload.wikimedia.org/wikipedia/commons/3/37/Clock.gif" width="100" height="100"/></h1> 
-            <form>
-                <label for="fname" id="fname"> Nome: </label>
-                <input type="text"> <br>
-                <input type="submit" value="Começar" onclick="hideDiv()">
-            </form>
-            <button onclick="hideDiv()"> A </button>
-            <p id="a"> b </p>
+        <div class="fundo-total">
+            <div class="fundo">
+                <div class="horizontal-direita">
+                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
+                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
+                </div>
+                <div class="horizontal-esquerda">
+                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
+                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
+                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
+                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
+                </div>
+                <div class="horizontal">
+                    <img id="img1" src="https://lh3.googleusercontent.com/proxy/8rynaCg_qyx7jIxd1FhnR60TGcFRZjZI1Xj4bTOd_hTPgV645YQIzoW2K9TVCDEUaekz2ajmJvcTQ-Vus-NIj_XZ4p9CspmFXAXrEjQRNapfAMVTmq7ghN-4kL2uKoet0IAsI0KQAqrP2-aIcuQ" draggable="true" ondragstart="dragstartHandler(event)" width="150" height="210">
+                    <img id="img2" src="https://lh3.googleusercontent.com/proxy/A4f6OUtWe0ojrQ_pQWuQt_JqFFHrNPZ1uacQdsU9Izh-YfutZStTFtS0lw0-EoHCWwoAPcGr3aaZBcBZ4elDeF52jh1q3S-qd_AQ7kG1nqzQ0jFHD4ptdzIYaDjQoK5SYckgF5bcn0H_fKhx-5I" draggable="true" ondragstart="dragstartHandler(event)" width="150" height="210">
+                </div>
+            </div>
         </div>
-        <script>
-                function hideDiv(){
-                    document.getElementById("a").value = document.getElementById("fname").value;
-                    // document.getElementById('sumir').hidden = true
-                }
-        </script>
+
     </body>
 </html>
