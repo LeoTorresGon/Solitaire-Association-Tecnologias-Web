@@ -5,8 +5,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="estilo.css" />
         <script>
+            let verso = "https://i.pinimg.com/736x/78/5d/f0/785df0b69d68e30a5dbcef6df6f8c69a.jpg";
+            let cartas = [
+            "https://lh3.googleusercontent.com/proxy/8rynaCg_qyx7jIxd1FhnR60TGcFRZjZI1Xj4bTOd_hTPgV645YQIzoW2K9TVCDEUaekz2ajmJvcTQ-Vus-NIj_XZ4p9CspmFXAXrEjQRNapfAMVTmq7ghN-4kL2uKoet0IAsI0KQAqrP2-aIcuQ",
+            "https://lh3.googleusercontent.com/proxy/A4f6OUtWe0ojrQ_pQWuQt_JqFFHrNPZ1uacQdsU9Izh-YfutZStTFtS0lw0-EoHCWwoAPcGr3aaZBcBZ4elDeF52jh1q3S-qd_AQ7kG1nqzQ0jFHD4ptdzIYaDjQoK5SYckgF5bcn0H_fKhx-5I"
+            ]; 
+
             function dragstartHandler(ev) {
-                ev.dataTransfer.setData("text", ev.target.id);
+                ev.dataTransfer.setData("card", ev.target.id);
+                ev.target.classList.add("arrastando-grupo");
             }
 
             function dragoverHandler(ev) {
@@ -15,35 +22,93 @@
 
             function dropHandler(ev) {
                 ev.preventDefault();
-                const data = ev.dataTransfer.getData("text");
-                if (ev.target.className === "quadrado") {
-                    ev.target.appendChild(document.getElementById(data));
+                const data = ev.dataTransfer.getData("card");
+                const cartaOrigem = document.getElementById(data);
+    
+                if (cartaOrigem.parentElement.classList.contains("pilha-paciencia")) {
+                    
+                    const pilhaOrigem = cartaOrigem.parentElement;
+                    const todasAsCartas = Array.from(pilhaOrigem.children);
+                    const indexInicio = todasAsCartas.indexOf(cartaOrigem);
+                    let container = ev.target;
+                    let destino = ev.target;
+                    if (destino.tagName === "IMG") {
+                        destino = destino.parentElement;
+                    }
+
+                    if (destino.classList.contains("pilha-paciencia") || ev.target.classList.contains("pilha-resposta")) {
+                        const cartasParaMover = todasAsCartas.slice(indexInicio);
+                        
+                        cartasParaMover.forEach(carta => {
+                            destino.appendChild(carta);
+                            carta.classList.remove("arrastando-grupo");
+                        });
+                    }
+                } else {
+                    if (ev.target.classList.contains("pilha-paciencia") || ev.target.classList.contains("pilha-resposta")) {
+                        ev.target.appendChild(cartaOrigem);
+                        cartaOrigem.classList.remove("arrastando-grupo");
+                    } else {
+                        ev.target.parentElement.appendChild(cartaOrigem);
+                        cartaOrigem.classList.remove("arrastando-grupo");
+                    }
+
+                }
+            }
+
+            function addCardBaralho(ev) {
+                const baralho = document.getElementById("baralho");
+                const containerNovas = document.getElementById("cartas-novas");
+ 
+                if (baralho.lastChild.classList.contains("carta")) {
+                    baralho.removeChild(baralho.lastChild);
+                    const novaCarta = document.createElement("img");
+                    novaCarta.src = cartas[Math.floor(Math.random() * cartas.length)];
+                    novaCarta.id = "carta-" + Date.now();
+                    novaCarta.draggable = true;
+                    novaCarta.addEventListener("dragstart", dragstartHandler);
+                    
+                    containerNovas.appendChild(novaCarta);
+                }
+            }
+
+            function startBaralho() {
+                const baralho = document.getElementById("baralho");
+                for (let i = 0; i < 7; i++) {
+                    const novaCarta = document.createElement("img");
+                    novaCarta.src = verso;
+                    novaCarta.id = "carta-tabuleiro-" + i;
+                    novaCarta.className = "carta";
+                    baralho.appendChild(novaCarta);
                 }
             }
         </script>
     </head>
 
-    
-    
     <body>
         <div class="fundo-total">
             <div class="fundo">
                 <div class="horizontal-direita">
-                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
-                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
+                    <div id="cartas-novas" class="pilha-cartas" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"> </div>
+                    <div id="baralho" class="pilha-baralho" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" onclick="addCardBaralho(event)"> </div>
                 </div>
                 <div class="horizontal-esquerda">
-                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
-                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
-                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
-                    <div class="quadrado" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" draggable="true"> </div>
+                    <div class="pilha-resposta" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-resposta" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-resposta" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-resposta" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
                 </div>
-                <div class="horizontal">
-                    <img id="img1" src="https://lh3.googleusercontent.com/proxy/8rynaCg_qyx7jIxd1FhnR60TGcFRZjZI1Xj4bTOd_hTPgV645YQIzoW2K9TVCDEUaekz2ajmJvcTQ-Vus-NIj_XZ4p9CspmFXAXrEjQRNapfAMVTmq7ghN-4kL2uKoet0IAsI0KQAqrP2-aIcuQ" draggable="true" ondragstart="dragstartHandler(event)" width="150" height="210">
-                    <img id="img2" src="https://lh3.googleusercontent.com/proxy/A4f6OUtWe0ojrQ_pQWuQt_JqFFHrNPZ1uacQdsU9Izh-YfutZStTFtS0lw0-EoHCWwoAPcGr3aaZBcBZ4elDeF52jh1q3S-qd_AQ7kG1nqzQ0jFHD4ptdzIYaDjQoK5SYckgF5bcn0H_fKhx-5I" draggable="true" ondragstart="dragstartHandler(event)" width="150" height="210">
+                <div class="horizontal-esquerda">
+                    <div class="pilha-paciencia" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-paciencia" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-paciencia" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-paciencia" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
                 </div>
             </div>
         </div>
-
+        <script>
+            startBaralho(document.getElementById("baralho"));
+        </script>
     </body>
+    
 </html>

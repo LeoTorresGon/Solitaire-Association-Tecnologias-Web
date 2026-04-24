@@ -29,7 +29,43 @@
     height: 210px;
     border: 1px solid #aaaaaa;
     margin-left: 10px;
+    flex-direction: column;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.pilha-paciencia, .pilha-baralho, .pilha-cartas, .pilha-resposta {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    width: 150px;
+    height: 210px;
+    margin-left: 10px;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: visible;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.pilha-paciencia img, .pilha-baralho img, .pilha-cartas img, .pilha-resposta img {
+    width: 150px;
+    height: 210px;
+    border-radius: 8px;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
+
+.pilha-paciencia img + img {
+    margin-top: -195px; 
+}
+
+.pilha-baralho img + img, .pilha-cartas img + img, .pilha-resposta img + img {
+    margin-top: -205px;
+}
+
+.arrastando-grupo {
+    opacity: 0.5;
+    transform: scale(1.05);
+    transition: transform 0.2s;
 }
