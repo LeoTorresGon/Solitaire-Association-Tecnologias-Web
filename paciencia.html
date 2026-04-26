@@ -1,0 +1,300 @@
+
+<html>
+    <head>
+        <title> Solitaire Association! </title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="estilo.css" />
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+       
+       <script>
+            let verso = `img/verso.png`;
+            
+            let tempoGasto = 0;
+            let cronometroInterval;
+            let jogoIniciado = false;
+
+            const nomesDosTemas = ["conto_fadas", "sobremesas", "pontuacoes", "xadrez"];
+            let dadosDoBaralho = [];
+            let recordeAntigo = 10000;
+
+            nomesDosTemas.forEach(tema => {
+                dadosDoBaralho.push({
+                    tema: tema,
+                    tipo: "tema",
+                    src: `img/v_${tema}.png` 
+                });
+
+                for (let i = 1; i <= 6; i++){
+                    dadosDoBaralho.push({
+                        tema: tema,
+                        tipo: "palavra",
+                        src: `img/${tema}_${i}.png` 
+                    });
+                }
+            });
+
+            dadosDoBaralho.sort(() => Math.random() - 0.5);
+            window.onload = function(){
+                exibirRecorde();
+            };
+
+            function jogar(){
+                document.getElementById("tela-inicial").style.display = "none";
+                startBaralho(); 
+            }
+
+            function iniciarCronometro(){
+                if (!jogoIniciado){
+                    jogoIniciado = true;
+                    cronometroInterval = setInterval(() => {
+                        tempoGasto++;
+                        atualizarDisplayTempo();
+                    }, 1000);
+                }
+            }
+
+            function atualizarDisplayTempo(){
+                const min = Math.floor(tempoGasto / 60).toString().padStart(2, '0');
+                const seg = (tempoGasto % 60).toString().padStart(2, '0');
+                document.getElementById("cronometro").innerText = `Tempo: ${min}:${seg}`;
+            }
+
+            function dragstartHandler(ev){
+                const carta = ev.target;
+                const pilhaOrigem = carta.parentElement;
+
+                if (pilhaOrigem.classList.contains("pilha-resposta")){
+                    ev.preventDefault(); 
+                    return;
+                }
+
+                if (pilhaOrigem.classList.contains("pilha-paciencia")){
+                    const cartasDaPilha = Array.from(pilhaOrigem.children);
+                    const indexCartaClicada = cartasDaPilha.indexOf(carta);
+                    
+                    const cartasAcima = cartasDaPilha.slice(indexCartaClicada); 
+                    
+                    const temTemaBloqueando = cartasAcima.some(c => c.dataset.tipo === "tema");
+
+                    if (carta.dataset.tipo !== "tema" && temTemaBloqueando){
+                        ev.preventDefault(); 
+                        return; 
+                    }
+                }
+
+                ev.dataTransfer.setData("card", ev.target.id);
+                carta.classList.add("arrastando-grupo");
+            }
+
+            function dragoverHandler(ev){
+                ev.preventDefault();
+            }
+
+            function dropHandler(ev){
+                ev.preventDefault();
+                const data = ev.dataTransfer.getData("card");
+                const cartaOrigem = document.getElementById(data);
+                
+                if (!cartaOrigem) return;
+
+                let destino = ev.target;
+
+                if (destino.tagName === "IMG"){
+                    destino = destino.parentElement;
+                }
+
+                const temaOrigem = cartaOrigem.dataset.tema;
+                const tipoOrigem = cartaOrigem.dataset.tipo;
+
+                let movimentoValido = false;
+
+                if (destino.classList.contains("pilha-resposta")){
+                    if (destino.children.length === 0){
+                        if(tipoOrigem === "tema")
+                            movimentoValido = true;
+                    } else {
+                        const cartaTopo = destino.lastElementChild;
+                        if (cartaTopo.dataset.tema === temaOrigem && tipoOrigem === "palavra"){
+                            movimentoValido = true;
+                        }
+                    }
+                } else if (destino.classList.contains("pilha-paciencia")){
+                    if (destino.children.length === 0){
+                            movimentoValido = true;
+                    } else {
+                        const cartaTopo = destino.lastElementChild;
+                        if (cartaTopo.dataset.tema === temaOrigem){
+                            movimentoValido = true;
+                        }
+                    }
+                }
+
+                if (movimentoValido){
+                    const pilhaOrigem = cartaOrigem.parentElement;
+                    
+                    if (cartaOrigem.parentElement.classList.contains("pilha-paciencia")){
+                        const todasAsCartas = Array.from(pilhaOrigem.children);
+                        const indexInicio = todasAsCartas.indexOf(cartaOrigem);
+                        const cartasParaMover = todasAsCartas.slice(indexInicio);
+        
+                        cartasParaMover.forEach(carta => {
+                            destino.appendChild(carta);
+                            carta.classList.remove("arrastando-grupo");
+                        });
+
+                    } else {
+                        destino.appendChild(cartaOrigem);
+                        cartaOrigem.classList.remove("arrastando-grupo");
+                    }
+
+                    checarVitoria();
+                } else {
+                    if (tipoOrigem === "palavra"){ 
+                        tempoGasto += 5; 
+                        atualizarDisplayTempo();
+
+                        cartaOrigem.style.border = "2px solid red";
+                        setTimeout(() => cartaOrigem.style.border = "none", 500);
+                    }
+
+                    cartaOrigem.classList.remove("arrastando-grupo");
+                }
+            }  
+            
+            function exibirRecorde(){
+                let recorde = localStorage.getItem("recorde_paciencia");
+                let tempoParaExibir;
+
+                if (recorde){
+                    tempoParaExibir = recorde;
+                } else {
+                    tempoParaExibir = 180; 
+                }
+
+                const min = Math.floor(tempoParaExibir / 60).toString().padStart(2, '0');
+                const seg = (tempoParaExibir % 60).toString().padStart(2, '0');
+                
+                const spansRecorde = document.querySelectorAll(".valor-recorde");
+                spansRecorde.forEach(span => {
+                    span.innerText = `${min}:${seg}`;
+                });
+            }
+
+            function checarVitoria(){
+                const pilhasResposta = document.querySelectorAll(".pilha-resposta");
+                let vitoria = true;
+                pilhasResposta.forEach(p => { if (p.children.length < 7) vitoria = false; });
+
+                if (vitoria){
+                    clearInterval(cronometroInterval);
+                    
+                    const min = Math.floor(tempoGasto / 60).toString().padStart(2, '0');
+                    const seg = (tempoGasto % 60).toString().padStart(2, '0');
+                    const tempoFormatado = `${min}:${seg}`;
+                    
+                    const displayTempoFinal = document.getElementById("tempo-atual-final");
+                    if(displayTempoFinal) displayTempoFinal.innerText = tempoFormatado;
+
+                    let recordeSalvo = localStorage.getItem("recorde_paciencia");
+                    let limiteRecorde = recordeSalvo ? parseInt(recordeSalvo) : 180;
+                    
+                    document.getElementById("tela-final").style.display = "flex";
+                    exibirRecorde(); 
+                }
+            }
+
+            function addCardBaralho(ev){
+                iniciarCronometro();
+
+                const baralho = document.getElementById("baralho");
+                const containerNovas = document.getElementById("cartas-novas");
+ 
+                if (baralho.children.length > 0){
+                    const cartaRevelar = baralho.lastElementChild;
+                    cartaRevelar.src = cartaRevelar.dataset.face;
+                    cartaRevelar.draggable = true;
+
+                    containerNovas.appendChild(cartaRevelar);
+                }
+            }
+
+            function startBaralho(){
+                const baralho = document.getElementById("baralho");
+                baralho.innerHTML = "";
+
+                dadosDoBaralho.forEach((dado, index) => {
+                    const novaCarta = document.createElement("img");
+                    novaCarta.src = verso;
+                    novaCarta.id = "carta-" + index;
+                    novaCarta.className = "carta";
+
+                    novaCarta.dataset.tema = dado.tema;
+                    novaCarta.dataset.tipo = dado.tipo;
+                    novaCarta.dataset.face = dado.src;
+
+                    novaCarta.draggable = false;
+                    novaCarta.addEventListener("dragstart", dragstartHandler);
+
+                    baralho.appendChild(novaCarta);
+                });
+
+            }
+
+        </script>
+    </head>
+
+    <body>
+    
+    <div id="tela-inicial" class="tela-fullscreen">
+        <img src="img/capa.png" alt="Capa" class="imagem-fundo-fullscreen">
+        
+        <div class="menu-central-transparente">
+            <h1 class="titulo">Solitaire Association</h1>
+            <p class="texto-recorde-inicial">Recorde Pessoal: <span class="valor-recorde">--:--</span></p>
+            <button class="botao-jogar" onclick="jogar()">Jogar</button>
+        </div>
+    </div>
+
+    <div id="tela-final" class="tela-fullscreen" style="display: none;">
+        <img src="img/capa.png" alt="Vitória" class="imagem-fundo-fullscreen">
+        
+        <div class="menu-central-transparente">
+            <h1 class="titulo-final">Parabéns!</h1>
+            <p class="texto-recorde">Seu Tempo: <span id="tempo-atual-final">--:--</span></p>
+            <p class="texto-recorde-final">Melhor Recorde: <span class="valor-recorde">03:00</span></p>
+            <button class="botao-reiniciar" onclick="location.reload()">Reiniciar</button>
+        </div>
+    </div>
+
+    <div id="cronometro">Tempo: 00:00</div>
+
+        <div class="fundo-total">
+            <div class="fundo">
+                <div class="horizontal-direita">
+                    <div id="cartas-novas" class="pilha-cartas" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"> </div>
+                    <div id="baralho" class="pilha-baralho" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)" onclick="addCardBaralho(event)"> </div>
+                </div>
+                <div class="horizontal-esquerda">
+                    <div class="pilha-resposta" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-resposta" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-resposta" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-resposta" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                </div>
+                <div class="horizontal-esquerda">
+                    <div class="pilha-paciencia" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-paciencia" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-paciencia" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                    <div class="pilha-paciencia" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></div>
+                </div>
+            </div>
+        </div>
+        <script>
+            startBaralho(document.getElementById("baralho"));
+        </script>
+    </body>
+    
+</html>
