@@ -50,5 +50,5 @@ Cada tema possui **1 Carta Vermelha (Tema)** e **6 Cartas Azuis (Palavra)**.
 
 ### 🖥️ Desenvolvedores
 * **Guilherme Ulhoa Cintra de Sousa**
-* ** Leonardo Torres Gonçalves e Silva** 
+* **Leonardo Torres Gonçalves e Silva** 
 * **Marina Rihs Matos Wang** 

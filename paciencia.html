@@ -199,8 +199,17 @@
                     const displayTempoFinal = document.getElementById("tempo-atual-final");
                     if(displayTempoFinal) displayTempoFinal.innerText = tempoFormatado;
 
+                    let limiteRecorde;
                     let recordeSalvo = localStorage.getItem("recorde_paciencia");
-                    let limiteRecorde = recordeSalvo ? parseInt(recordeSalvo) : 180;
+                    if (!recordeSalvo){
+                        localStorage.setItem("recorde_paciencia", tempoGasto);
+                        limiteRecorde = tempoGasto;
+                    } else if (tempoGasto < parseInt(recordeSalvo)){
+                        localStorage.setItem("recorde_paciencia", tempoGasto);
+                        limiteRecorde = tempoGasto;
+                    } else {
+                        limiteRecorde = parseInt(recordeSalvo);
+                    }
                     
                     document.getElementById("tela-final").style.display = "flex";
                     exibirRecorde(); 
