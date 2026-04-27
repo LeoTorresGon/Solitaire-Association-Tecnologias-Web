@@ -2,13 +2,16 @@
 <html>
     <head>
         <title> Solitaire Association! </title>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="estilo.css" />
+        
+        <!-- meta: define características da página -->
+        <meta charset="UTF-8" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <link rel="stylesheet" href="estilo.css" /> 
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+        <!-- Conexão com fontes do Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com"> 
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <!-- link crossorigin:  definição de mecanismo de sergurança -->
+        <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet"> <!-- definição de font style -->
        
        <script>
             let verso = `img/verso.png`;
@@ -19,8 +22,12 @@
 
             const nomesDosTemas = ["conto_fadas", "sobremesas", "pontuacoes", "xadrez"];
             let dadosDoBaralho = [];
-            let recordeAntigo = 10000;
-
+            
+            /**
+             * BLOCO DE INICIALIZAÇÃO DE DADOS
+             * Gera dinamicamente o baralho de 28 cartas baseado nos temas.
+             * Cria 1 carta "tema" e 6 cartas "palavra" para cada tema listado.
+             */
             nomesDosTemas.forEach(tema => {
                 dadosDoBaralho.push({
                     tema: tema,
@@ -37,63 +44,97 @@
                 }
             });
 
-            dadosDoBaralho.sort(() => Math.random() - 0.5);
-            window.onload = function(){
+            dadosDoBaralho.sort(() => Math.random() - 0.5); // Embaralha o baralho
+
+            /**
+             * Garante que o recorde seja carregado do localStorage 
+             * assim que a estrutura do DOM (página) estiver pronta.
+             */
+            window.onload = function(){ //garante que o DOM esteja carregado antes de acessar os elementos
                 exibirRecorde();
             };
 
+            /**
+             * Inicia a partida ocultando a tela de introdução e renderizando o baralho.
+             */
             function jogar(){
-                document.getElementById("tela-inicial").style.display = "none";
+                document.getElementById("tela-inicial").style.display = "none"; //seleciona o elemento do ID especificado e controla a visibilidade
+
                 startBaralho(); 
             }
-
+            
+            /**
+             * Gerencia o estado do jogo e inicia o contador de segundos 
+             */            
             function iniciarCronometro(){
                 if (!jogoIniciado){
                     jogoIniciado = true;
+
                     cronometroInterval = setInterval(() => {
                         tempoGasto++;
                         atualizarDisplayTempo();
-                    }, 1000);
+                    }, 1000); //executa a função a cada intervalo de tempo (1000ms = 1s)
                 }
             }
 
+            /**
+             * Converte os segundos totais em formato MM:SS usando Math.floor para arredondar para baixo.
+             * Utiliza toString() e padStart() para garantir a formatação com 2 dígitos, preenchendo com '0' se necessário.
+             */
             function atualizarDisplayTempo(){
-                const min = Math.floor(tempoGasto / 60).toString().padStart(2, '0');
+                const min = Math.floor(tempoGasto / 60).toString().padStart(2, '0'); 
                 const seg = (tempoGasto % 60).toString().padStart(2, '0');
-                document.getElementById("cronometro").innerText = `Tempo: ${min}:${seg}`;
+
+                document.getElementById("cronometro").innerText = `Tempo: ${min}:${seg}`; //define o texto interno
             }
 
-            function dragstartHandler(ev){
-                const carta = ev.target;
-                const pilhaOrigem = carta.parentElement;
+            /**
+             * Gerencia o início do evento de arrastar (Drag).
+             * Valida as regras do jogo antes de permitir que a carta seja movida.
+             * Regras:
+             * 1. Cartas na pilha de resposta (posição final) não podem ser movidas.
+             * 2. Palavras travadas por um Tema (carta vermelha) acima delas não podem ser movidas.
+             */
+            function dragstartHandler(ev){ 
+                const carta = ev.target; 
+                const pilhaOrigem = carta.parentElement; 
 
-                if (pilhaOrigem.classList.contains("pilha-resposta")){
-                    ev.preventDefault(); 
+                // Regra 1: Cartas na posição superior de resposta não podem voltar ao jogo
+                if (pilhaOrigem.classList.contains("pilha-resposta")){ 
+                    ev.preventDefault();  
                     return;
                 }
 
-                if (pilhaOrigem.classList.contains("pilha-paciencia")){
-                    const cartasDaPilha = Array.from(pilhaOrigem.children);
-                    const indexCartaClicada = cartasDaPilha.indexOf(carta);
+                // Regra 2: Trava do Tema. Impede mover palavras presas sob uma carta vermelha.
+                if (pilhaOrigem.classList.contains("pilha-paciencia")){ 
+                    const cartasDaPilha = Array.from(pilhaOrigem.children); 
+                    const indexCartaClicada = cartasDaPilha.indexOf(carta); 
                     
-                    const cartasAcima = cartasDaPilha.slice(indexCartaClicada); 
+                    const cartasAcima = cartasDaPilha.slice(indexCartaClicada);  
                     
-                    const temTemaBloqueando = cartasAcima.some(c => c.dataset.tipo === "tema");
-
+                    const temTemaBloqueando = cartasAcima.some(c => c.dataset.tipo === "tema"); 
+                    
                     if (carta.dataset.tipo !== "tema" && temTemaBloqueando){
                         ev.preventDefault(); 
                         return; 
                     }
                 }
 
-                ev.dataTransfer.setData("card", ev.target.id);
-                carta.classList.add("arrastando-grupo");
+                ev.dataTransfer.setData("card", ev.target.id); 
+                carta.classList.add("arrastando-grupo"); 
             }
 
+            /**
+             * Permite que elementos recebam um drop, prevenindo o comportamento padrão do navegador.
+             */
             function dragoverHandler(ev){
                 ev.preventDefault();
             }
 
+            /**
+             * Processa a lógica principal do jogo ao soltar uma carta.
+             * Verifica `dataset` (tema e tipo), valida movimentos e aplica punição de tempo por erros.
+             */
             function dropHandler(ev){
                 ev.preventDefault();
                 const data = ev.dataTransfer.getData("card");
@@ -103,6 +144,7 @@
 
                 let destino = ev.target;
 
+                // Garante que o destino seja a pilha, mesmo que o jogador solte o mouse sobre outra imagem
                 if (destino.tagName === "IMG"){
                     destino = destino.parentElement;
                 }
@@ -112,21 +154,29 @@
 
                 let movimentoValido = false;
 
+                // Validação para posições principais
                 if (destino.classList.contains("pilha-resposta")){
-                    if (destino.children.length === 0){
+                    if (destino.children.length === 0){ // Espaço vazio aceita apenas Tema
                         if(tipoOrigem === "tema")
                             movimentoValido = true;
+
                     } else {
-                        const cartaTopo = destino.lastElementChild;
+                        // Pilha iniciada aceita apenas palavras do mesmo tema
+                        const cartaTopo = destino.lastElementChild; 
+
                         if (cartaTopo.dataset.tema === temaOrigem && tipoOrigem === "palavra"){
                             movimentoValido = true;
                         }
                     }
-                } else if (destino.classList.contains("pilha-paciencia")){
+
+                } else if (destino.classList.contains("pilha-paciencia")){ // Validação para tabuleiro inferior
                     if (destino.children.length === 0){
                             movimentoValido = true;
-                    } else {
+
+                    } else { 
+                        // Empilhamento no tabuleiro exige o mesmo tema
                         const cartaTopo = destino.lastElementChild;
+
                         if (cartaTopo.dataset.tema === temaOrigem){
                             movimentoValido = true;
                         }
@@ -136,37 +186,42 @@
                 if (movimentoValido){
                     const pilhaOrigem = cartaOrigem.parentElement;
                     
-                    if (cartaOrigem.parentElement.classList.contains("pilha-paciencia")){
-                        const todasAsCartas = Array.from(pilhaOrigem.children);
+                    if (cartaOrigem.parentElement.classList.contains("pilha-paciencia")){ // Movimento de grupo: move a carta clicada e todas as cartas acima dela
+                        const todasAsCartas = Array.from(pilhaOrigem.children); 
                         const indexInicio = todasAsCartas.indexOf(cartaOrigem);
                         const cartasParaMover = todasAsCartas.slice(indexInicio);
         
                         cartasParaMover.forEach(carta => {
-                            destino.appendChild(carta);
-                            carta.classList.remove("arrastando-grupo");
+                            destino.appendChild(carta); 
+                            carta.classList.remove("arrastando-grupo"); 
                         });
 
-                    } else {
+                    } else { //Movimento simples de uma carta
                         destino.appendChild(cartaOrigem);
                         cartaOrigem.classList.remove("arrastando-grupo");
                     }
 
                     checarVitoria();
-                } else {
+                } else { 
+                    // Punição: Se tentou fazer associação errada de palavra, sofre penalidade no tempo
                     if (tipoOrigem === "palavra"){ 
-                        tempoGasto += 5; 
+                        tempoGasto += 5;  
                         atualizarDisplayTempo();
 
-                        cartaOrigem.style.border = "2px solid red";
-                        setTimeout(() => cartaOrigem.style.border = "none", 500);
+                        cartaOrigem.style.border = "2px solid red"; 
+                        setTimeout(() => cartaOrigem.style.border = "none", 500); // setTimeout: executa a função após um determinado tempo 
                     }
 
                     cartaOrigem.classList.remove("arrastando-grupo");
                 }
             }  
             
+            /**
+             * Recupera o melhor tempo salvo usando localStorage.getItem.
+             * Caso seja o primeiro acesso, define um padrão inicial de 3 minutos (180s).
+             */
             function exibirRecorde(){
-                let recorde = localStorage.getItem("recorde_paciencia");
+                let recorde = localStorage.getItem("recorde_paciencia"); 
                 let tempoParaExibir;
 
                 if (recorde){
@@ -180,17 +235,23 @@
                 
                 const spansRecorde = document.querySelectorAll(".valor-recorde");
                 spansRecorde.forEach(span => {
-                    span.innerText = `${min}:${seg}`;
-                });
+                    span.innerText = `${min}:${seg}`; 
+                }); 
+                
             }
 
+            /**
+             * Verifica continuamente se as condições de vitória foram atingidas (7 cartas em cada fundação).
+             * Se verdadeiro, encerra o intervalo (clearInterval) e salva novos recordes (localStorage.setItem).
+             */
             function checarVitoria(){
                 const pilhasResposta = document.querySelectorAll(".pilha-resposta");
                 let vitoria = true;
-                pilhasResposta.forEach(p => { if (p.children.length < 7) vitoria = false; });
+
+                pilhasResposta.forEach(p => { if (p.children.length < 7) vitoria = false; }); 
 
                 if (vitoria){
-                    clearInterval(cronometroInterval);
+                    clearInterval(cronometroInterval); // clearInterval: para a execução de setInterval
                     
                     const min = Math.floor(tempoGasto / 60).toString().padStart(2, '0');
                     const seg = (tempoGasto % 60).toString().padStart(2, '0');
@@ -200,22 +261,29 @@
                     if(displayTempoFinal) displayTempoFinal.innerText = tempoFormatado;
 
                     let limiteRecorde;
-                    let recordeSalvo = localStorage.getItem("recorde_paciencia");
+                    let recordeSalvo = localStorage.getItem("recorde_paciencia"); 
+
                     if (!recordeSalvo){
                         localStorage.setItem("recorde_paciencia", tempoGasto);
                         limiteRecorde = tempoGasto;
+
                     } else if (tempoGasto < parseInt(recordeSalvo)){
                         localStorage.setItem("recorde_paciencia", tempoGasto);
                         limiteRecorde = tempoGasto;
+
                     } else {
-                        limiteRecorde = parseInt(recordeSalvo);
+                        limiteRecorde = parseInt(recordeSalvo); 
                     }
                     
                     document.getElementById("tela-final").style.display = "flex";
                     exibirRecorde(); 
                 }
             }
-
+            
+           /**
+             * Retira uma carta do baralho fechado, expõe sua face atualizando o atributo `src` 
+             * através dos dados armazenados no `dataset`, e permite que seja arrastada.
+             */
             function addCardBaralho(ev){
                 iniciarCronometro();
 
@@ -230,7 +298,11 @@
                     containerNovas.appendChild(cartaRevelar);
                 }
             }
-
+            
+            /**
+             * Injeta as cartas no DOM no início do jogo.
+             * Grava as informações de lógica (tema e tipo) nos atributos `data-` (dataset) de cada <img>.
+             */
             function startBaralho(){
                 const baralho = document.getElementById("baralho");
                 baralho.innerHTML = "";
@@ -246,7 +318,7 @@
                     novaCarta.dataset.face = dado.src;
 
                     novaCarta.draggable = false;
-                    novaCarta.addEventListener("dragstart", dragstartHandler);
+                    novaCarta.addEventListener("dragstart", dragstartHandler); 
 
                     baralho.appendChild(novaCarta);
                 });
@@ -275,9 +347,7 @@
             <h1 class="titulo-final">Parabéns!</h1>
             <p class="texto-recorde">Seu Tempo: <span id="tempo-atual-final">--:--</span></p>
             <p class="texto-recorde-final">Melhor Recorde: <span class="valor-recorde">03:00</span></p>
-            <button class="botao-reiniciar" onclick="location.reload()">Reiniciar</button>
-        </div>
-    </div>
+            <button class="botao-reiniciar" onclick="location.reload()">Reiniciar</button> 
 
     <div id="cronometro">Tempo: 00:00</div>
 
